@@ -1,0 +1,21 @@
+{
+  "name": "supertonic-tts-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal, beginner-friendly Supertonic TTS web app (EN / KO / JA)",
+  "type": "module",
+  "scripts": {
+    "postinstall": "node scripts/download-assets.mjs",
+    "assets": "node scripts/download-assets.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview --port 3000 --host"
+  },
+  "dependencies": {
+    "mammoth": "^1.8.0",
+    "onnxruntime-web": "^1.17.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
