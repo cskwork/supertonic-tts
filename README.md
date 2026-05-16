@@ -1,15 +1,18 @@
 # Supertonic TTS — Minimal Web App
 
 A clean, beginner-friendly text-to-speech web app built on
-[Supertonic 3](https://github.com/supertone-inc/supertonic). Three languages
-(English, Korean, Japanese), six preset voices with one-tap preview, paste-or-upload
-input (`.txt` / `.docx`), and instant download — all running entirely in your
-browser via WebGPU/WebAssembly. No accounts, no API keys, no cloud round-trips.
+[Supertonic 3](https://github.com/supertone-inc/supertonic). Three ready-made
+UI languages (English, Korean, Japanese), additional Supertonic language tags
+available in the text processor, six preset voices with one-tap preview,
+paste-or-upload input (`.txt` / `.docx`), and instant download — all running
+entirely in your browser via WebGPU/WebAssembly. No accounts, no API keys, no
+cloud round-trips.
 
 ## Features
 
-- **3 languages**: English, Korean, Japanese
-- **6 voices** with click-to-preview
+- **3 UI languages**: English, Korean, Japanese
+- **32 TTS language tags** available in the underlying Supertonic text processor
+- **6 voice styles** with click-to-preview
 - **Paste or upload**: drop in `.txt` or `.docx`
 - **Sample text presets** per language
 - **One-tap "Speak"** with autoplay + transcript view
@@ -17,9 +20,51 @@ browser via WebGPU/WebAssembly. No accounts, no API keys, no cloud round-trips.
 - **WebGPU acceleration** with automatic WASM fallback
 - **Fully local**: text never leaves the browser
 
+## Supported TTS options
+
+The app has two language layers:
+
+- **Current UI choices**: English (`en`), Korean (`ko`), Japanese (`ja`).
+  These are the languages with ready-made sample text, preview text, and UI
+  tabs in `app/main.js`.
+- **Underlying Supertonic language tags**: `en`, `ko`, `ja`, `ar`, `bg`, `cs`,
+  `da`, `de`, `el`, `es`, `et`, `fi`, `fr`, `hi`, `hr`, `hu`, `id`, `it`,
+  `lt`, `lv`, `nl`, `pl`, `pt`, `ro`, `ru`, `sk`, `sl`, `sv`, `tr`, `uk`,
+  `vi`, `na`. These are accepted by the text processor in `app/helper.js`.
+
+To expose another language in the UI, add an entry to `LANGS` in `app/main.js`
+with preview and preset text, then add or render the matching language tab.
+
+### Voice styles
+
+Every voice style can be used with every supported TTS language tag:
+
+| ID | Display name | Type | Style file |
+| --- | --- | --- | --- |
+| `F1` | Mina | Female | `voice_styles/F1.json` |
+| `F2` | Sora | Female | `voice_styles/F2.json` |
+| `F3` | Yuna | Female | `voice_styles/F3.json` |
+| `M1` | Aiden | Male | `voice_styles/M1.json` |
+| `M2` | Hiro | Male | `voice_styles/M2.json` |
+| `M3` | Leo | Male | `voice_styles/M3.json` |
+
+`F1` / Mina is the default voice. Voice styles are downloaded from
+`Supertone/supertonic-3` and loaded on demand from `assets/voice_styles/` in
+development, or from the Hugging Face CDN in production.
+
+### Model/runtime options
+
+- **TTS model family**: Supertonic 3 from `Supertone/supertonic-3`.
+- **ONNX model files**: `duration_predictor.onnx`, `text_encoder.onnx`,
+  `vector_estimator.onnx`, `vocoder.onnx`.
+- **Runtime**: WebGPU first, then WebAssembly fallback.
+- **Generation controls**: quality steps from 4 to 16, and speed from 0.7 to
+  1.8.
+- **Output**: mono 44.1 kHz, 16-bit PCM WAV generated locally in the browser.
+
 ## Quick start
 
-Requires Node.js 18+ only. Model assets (~150 MB) are streamed directly from
+Requires Node.js 18+ only. Model assets (~380 MB) are streamed directly from
 Hugging Face — no `git-lfs` needed.
 
 ```bash
