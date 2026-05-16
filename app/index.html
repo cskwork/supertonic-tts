@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Supertonic: text to speech, on your device</title>
-    <meta
-      name="description"
-      content="A quiet, fast text-to-speech tool. English, Korean, Japanese. Runs entirely in your browser."
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff8ea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1814" media="(prefers-color-scheme: dark)" />
+
+    <title data-i18n="page_title">슈퍼토닉: 내 기기에서 바로 글을 목소리로</title>
+    <meta name="description" content="브라우저 안에서 바로 작동하는 텍스트 음성 변환. 한국어, 영어, 일본어를 지원합니다." />
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
     />
     <link rel="stylesheet" href="./style.css" />
   </head>
@@ -14,26 +20,35 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark">Supertonic</span>
-        <span>tts</span>
+        <span>TTS</span>
       </div>
       <div class="topbar-meta">
-        <span id="backendBadge" class="badge">loading</span>
-        <a class="link" href="https://github.com/cskwork/supertonic-tts" target="_blank" rel="noreferrer noopener">source</a>
+        <span id="backendBadge" class="badge" data-i18n="topbar_loading">불러오는 중</span>
+        <div
+          id="localeToggle"
+          class="locale-toggle"
+          role="group"
+          data-i18n-aria-label="locale_toggle_aria"
+          aria-label="표시 언어 전환"
+        >
+          <button class="locale-opt is-active" type="button" data-locale="ko" aria-pressed="true">한</button>
+          <button class="locale-opt" type="button" data-locale="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="link" href="https://github.com/cskwork/supertonic-tts" target="_blank" rel="noreferrer noopener" data-i18n="topbar_source">소스 보기</a>
       </div>
     </header>
 
     <main class="page">
       <section class="hero">
-        <h1>Words become <em>voice</em>, on your device.</h1>
-        <p class="hero-sub">
-          Paste a paragraph or upload a document. Pick a voice. Listen. Nothing
-          you write leaves the browser.
+        <h1 data-i18n-html="hero_h1_html">글이 <em>목소리</em>가 되는 가장 빠른 방법</h1>
+        <p class="hero-sub" data-i18n="hero_sub">
+          원하는 문장을 붙여넣거나 파일을 올리고, 목소리를 골라보세요. 작성하신 내용은 브라우저 밖으로 나가지 않습니다.
         </p>
       </section>
 
       <div id="loader" class="loader" role="status" aria-live="polite">
         <div class="loader-row">
-          <span id="loaderText">Loading speech model</span>
+          <span id="loaderText" data-i18n="loader_initial">음성 모델을 불러오는 중입니다</span>
           <span id="loaderPct" class="loader-pct">0%</span>
         </div>
         <div class="loader-bar"><div id="loaderFill" class="loader-fill"></div></div>
@@ -41,16 +56,16 @@
 
       <section class="section">
         <div class="section-label">
-          <span>Language</span>
+          <span data-i18n="section_language">언어</span>
         </div>
         <div class="lang-row" id="langTabs" role="tablist">
-          <button class="lang-pill is-active" role="tab" data-lang="en" aria-selected="true">
-            <span>English</span>
-            <span class="lang-code">en</span>
-          </button>
-          <button class="lang-pill" role="tab" data-lang="ko" aria-selected="false">
+          <button class="lang-pill is-active" role="tab" data-lang="ko" aria-selected="true">
             <span>한국어</span>
             <span class="lang-code">ko</span>
+          </button>
+          <button class="lang-pill" role="tab" data-lang="en" aria-selected="false">
+            <span>English</span>
+            <span class="lang-code">en</span>
           </button>
           <button class="lang-pill" role="tab" data-lang="ja" aria-selected="false">
             <span>日本語</span>
@@ -61,28 +76,29 @@
 
       <section class="section">
         <div class="section-label">
-          <span>Voice</span>
-          <span class="label-hint">Click the dot to preview.</span>
+          <span data-i18n="section_voice">목소리</span>
+          <span class="label-hint" data-i18n="section_voice_hint">동그라미를 눌러 미리 들어보세요.</span>
         </div>
         <div id="voiceGrid" class="voice-row"></div>
       </section>
 
       <section class="section">
         <div class="section-label">
-          <span>Text</span>
-          <span class="label-hint" id="textHint">Type, paste, or drop a file.</span>
+          <span data-i18n="section_text">본문</span>
+          <span class="label-hint" data-i18n="section_text_hint">직접 쓰거나 붙여넣거나, 파일을 끌어다 놓아 보세요.</span>
         </div>
 
-        <div class="presets" id="presets" aria-label="Sample text presets"></div>
+        <div class="presets" id="presets" data-i18n-aria-label="presets_aria" aria-label="예시 문장"></div>
 
         <div class="text-wrap" id="textWrap">
           <textarea
             id="text"
             class="text-input"
             spellcheck="false"
-            placeholder="Type or paste your text here, or drop a .txt or .docx file…"
+            data-i18n-placeholder="text_placeholder"
+            placeholder="여기에 변환할 문장을 입력하거나 붙여넣으세요. .txt 또는 .docx 파일을 끌어다 놓아도 됩니다."
           ></textarea>
-          <div class="dragover-hint">Drop to load</div>
+          <div class="dragover-hint" data-i18n="text_dragover">놓으면 본문에 불러옵니다</div>
         </div>
 
         <div class="text-tools">
@@ -93,21 +109,21 @@
               accept=".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               hidden
             />
-            <span class="file-pick-link">upload .txt / .docx</span>
+            <span class="file-pick-link" data-i18n="file_pick_link">.txt / .docx 파일 올리기</span>
             <span id="fileName" class="file-name"></span>
           </label>
-          <span id="charCount" class="text-meta">0 / 0 words · 0 chars</span>
+          <span id="charCount" class="text-meta">0 글자</span>
         </div>
 
         <details class="advanced">
-          <summary>Advanced</summary>
+          <summary data-i18n="advanced_toggle">고급 설정</summary>
           <div class="advanced-grid">
             <label>
-              Quality (steps)
+              <span data-i18n="advanced_quality">품질 (단계 수)</span>
               <input id="totalStep" type="number" value="8" min="4" max="16" step="1" />
             </label>
             <label>
-              Speed
+              <span data-i18n="advanced_speed">속도</span>
               <input id="speed" type="number" value="1.05" min="0.7" max="1.8" step="0.05" />
             </label>
           </div>
@@ -116,15 +132,15 @@
 
       <div class="action-row">
         <button id="generateBtn" class="primary-btn" disabled>
-          <span id="generateLabel">Speak</span>
-          <kbd>⌘ ↵</kbd>
+          <span id="generateLabel" data-i18n="btn_speak">음성으로 변환</span>
+          <kbd data-i18n-aria-label="btn_shortcut_aria" aria-label="단축키 Cmd 또는 Ctrl 엔터">⌘ ↵</kbd>
         </button>
         <p id="errorMsg" class="error-msg" role="alert"></p>
       </div>
 
       <section id="output" class="output hidden">
         <div class="output-head">
-          <h2 class="output-title">Result</h2>
+          <h2 class="output-title" data-i18n="output_title">결과</h2>
           <div class="output-stats">
             <span id="statAudio">···</span>
             <span class="sep">/</span>
@@ -133,18 +149,18 @@
         </div>
         <audio id="audio" controls></audio>
         <div class="output-actions">
-          <button id="downloadBtn" class="ghost-btn">Download WAV</button>
-          <button id="copyLinkBtn" class="ghost-btn">Open in new tab</button>
+          <button id="downloadBtn" class="ghost-btn" data-i18n="btn_download">WAV 파일로 저장</button>
+          <button id="copyLinkBtn" class="ghost-btn" data-i18n="btn_open_tab">새 탭에서 열기</button>
         </div>
         <details class="transcript">
-          <summary>Transcript</summary>
+          <summary data-i18n="transcript_toggle">원문 보기</summary>
           <p id="transcript" class="transcript-body"></p>
         </details>
       </section>
     </main>
 
-    <footer class="footer">
-      Built on <a href="https://github.com/supertone-inc/supertonic" target="_blank" rel="noreferrer noopener">Supertonic 3</a>. Runs locally via WebGPU or WebAssembly. No accounts, no API keys.
+    <footer class="footer" data-i18n-html="footer_html">
+      Supertonic 3 모델로 동작합니다. WebGPU 또는 WebAssembly로 기기 안에서 직접 실행되며, 계정과 API 키가 필요 없습니다.
     </footer>
 
     <script type="module" src="./main.js"></script>

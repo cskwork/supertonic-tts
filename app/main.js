@@ -1,5 +1,6 @@
 import { loadTextToSpeech, loadVoiceStyle, writeWavFile } from './helper.js';
 import mammoth from 'mammoth/mammoth.browser.js';
+import { t, applyDom, setLocale, getLocale } from './i18n.js';
 
 /* ================== Config ================== */
 
@@ -12,19 +13,21 @@ const HF_CDN_BASE = 'https://huggingface.co/Supertone/supertonic-3/resolve/main'
 const ASSETS_BASE = import.meta.env.PROD ? HF_CDN_BASE : 'assets';
 const ONNX_BASE = `${ASSETS_BASE}/onnx`;
 
+// Voice catalog. Names are language-neutral (read naturally in Korean,
+// English, and Japanese). The underlying Supertonic model is multilingual,
+// so every voice works for every language.
 const VOICES = [
-  { id: 'M1', label: 'Aiden', gender: 'male',   style: `${ASSETS_BASE}/voice_styles/M1.json` },
-  { id: 'M2', label: 'Hiro',  gender: 'male',   style: `${ASSETS_BASE}/voice_styles/M2.json` },
-  { id: 'M3', label: 'Leo',   gender: 'male',   style: `${ASSETS_BASE}/voice_styles/M3.json` },
   { id: 'F1', label: 'Mina',  gender: 'female', style: `${ASSETS_BASE}/voice_styles/F1.json` },
   { id: 'F2', label: 'Sora',  gender: 'female', style: `${ASSETS_BASE}/voice_styles/F2.json` },
-  { id: 'F3', label: 'Yuna',  gender: 'female', style: `${ASSETS_BASE}/voice_styles/F3.json` }
+  { id: 'F3', label: 'Yuna',  gender: 'female', style: `${ASSETS_BASE}/voice_styles/F3.json` },
+  { id: 'M1', label: 'Aiden', gender: 'male',   style: `${ASSETS_BASE}/voice_styles/M1.json` },
+  { id: 'M2', label: 'Hiro',  gender: 'male',   style: `${ASSETS_BASE}/voice_styles/M2.json` },
+  { id: 'M3', label: 'Leo',   gender: 'male',   style: `${ASSETS_BASE}/voice_styles/M3.json` }
 ];
 
 const LANGS = {
   en: {
-    preview:
-      "Hi. This is a quick voice sample, so you can hear me before you generate your full audio.",
+    preview: "Hi. This is a quick voice sample, so you can hear me before you generate your full audio.",
     presets: [
       "Welcome to our product demo. Today, we will explore three key features that save you hours of work each week.",
       "The early morning fog lifted slowly over the harbor, revealing fishing boats and the soft glow of sunrise on the water.",
@@ -50,12 +53,12 @@ const LANGS = {
 };
 
 const DEFAULT_VOICE_ID = 'F1';
-const DEFAULT_LANG = 'en';
+const DEFAULT_LANG = 'ko';
 
 /* ================== State ================== */
 
 const state = {
-  lang: DEFAULT_LANG,
+  lang: DEFAULT_LANG,       // TTS source language (the text language)
   voiceId: DEFAULT_VOICE_ID,
   tts: null,
   cfgs: null,
@@ -96,18 +99,31 @@ const dom = {
   statGen: $('#statGen'),
   downloadBtn: $('#downloadBtn'),
   copyLinkBtn: $('#copyLinkBtn'),
-  transcript: $('#transcript')
+  transcript: $('#transcript'),
+  localeToggle: $('#localeToggle')
 };
 
 /* ================== Init ================== */
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Apply i18n to the static markup before anything else.
+  applyDom();
+  syncLocaleToggle(getLocale());
+
   renderVoices();
   renderPresets();
   wireEvents();
   dom.text.value = LANGS[state.lang].presets[0];
   updateCharCount();
   initialiseModels();
+
+  // Re-run dynamic renders when UI locale changes.
+  window.addEventListener('locale-changed', (e) => {
+    syncLocaleToggle(e.detail);
+    renderVoices();
+    renderPresets();
+    updateCharCount();
+  });
 });
 
 /* ================== Rendering ================== */
@@ -119,10 +135,13 @@ function renderVoices() {
     chip.type = 'button';
     chip.className = 'voice-chip' + (v.id === state.voiceId ? ' is-active' : '');
     chip.dataset.voiceId = v.id;
+    const genderLabel = t(v.gender === 'male' ? 'gender_male' : 'gender_female');
+    const previewTitle = t('voice_preview_title', { name: v.label });
+    const previewAria = t('voice_preview_aria', { name: v.label });
     chip.innerHTML = `
       <span class="voice-name">${v.label}</span>
-      <span class="voice-meta">${v.gender === 'male' ? 'm' : 'f'}</span>
-      <span class="voice-preview" data-action="preview" title="Preview ${v.label}" aria-label="Preview ${v.label}">
+      <span class="voice-meta">${genderLabel}</span>
+      <span class="voice-preview" data-action="preview" title="${previewTitle}" aria-label="${previewAria}">
         <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
           <circle cx="5" cy="5" r="3"/>
         </svg>
@@ -139,7 +158,7 @@ function renderPresets() {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'preset-chip';
-    chip.textContent = `Sample ${String(i + 1).padStart(2, '0')}`;
+    chip.textContent = t('preset_label', { n: String(i + 1).padStart(2, '0') });
     chip.title = text;
     chip.addEventListener('click', () => {
       dom.text.value = text;
@@ -153,8 +172,17 @@ function renderPresets() {
 function updateCharCount() {
   const text = dom.text.value;
   const chars = text.length;
-  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  dom.charCount.textContent = `${words.toLocaleString()} words · ${chars.toLocaleString()} chars`;
+  // For Korean/Japanese (no whitespace word breaks), word counts are noisy.
+  // Show only characters for those languages; words + chars for English.
+  if (state.lang === 'en') {
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    dom.charCount.textContent = t('char_count_en', {
+      words: words.toLocaleString(),
+      chars: chars.toLocaleString()
+    });
+  } else {
+    dom.charCount.textContent = t('char_count_ko', { chars: chars.toLocaleString() });
+  }
 }
 
 function setActiveLang(lang) {
@@ -166,6 +194,7 @@ function setActiveLang(lang) {
     tab.setAttribute('aria-selected', String(isActive));
   });
   renderPresets();
+  updateCharCount();
 }
 
 function setActiveVoice(voiceId) {
@@ -176,7 +205,15 @@ function setActiveVoice(voiceId) {
   });
   ensureStyleLoaded(voiceId).catch((err) => {
     console.error(err);
-    showError(`Could not load voice ${voiceId}. ${err.message}`);
+    showError(t('error_voice_load', { voice: voiceId, error: err.message }));
+  });
+}
+
+function syncLocaleToggle(loc) {
+  dom.localeToggle.querySelectorAll('.locale-opt').forEach((b) => {
+    const isActive = b.dataset.locale === loc;
+    b.classList.toggle('is-active', isActive);
+    b.setAttribute('aria-pressed', String(isActive));
   });
 }
 
@@ -248,6 +285,13 @@ function wireEvents() {
     window.open(state.lastOutputUrl, '_blank', 'noopener');
   });
 
+  // Locale toggle (KO ⇄ EN)
+  dom.localeToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('.locale-opt');
+    if (!btn) return;
+    setLocale(btn.dataset.locale);
+  });
+
   state.previewAudio.addEventListener('ended', clearPreviewIndicators);
   state.previewAudio.addEventListener('pause', clearPreviewIndicators);
 }
@@ -259,7 +303,7 @@ async function ingestFile(file) {
   dom.fileName.textContent = file.name;
   try {
     const text = await extractTextFromFile(file);
-    if (!text.trim()) throw new Error('That file looks empty.');
+    if (!text.trim()) throw new Error(t('error_file_empty'));
     dom.text.value = text.trim();
     updateCharCount();
   } catch (err) {
@@ -278,14 +322,14 @@ async function extractTextFromFile(file) {
     const result = await mammoth.extractRawText({ arrayBuffer });
     return result.value || '';
   }
-  throw new Error('Only .txt and .docx files are supported.');
+  throw new Error(t('error_file_unsupported'));
 }
 
 /* ================== Model loading ================== */
 
 async function initialiseModels() {
   try {
-    setLoader('Loading speech model', 0);
+    setLoader(t('loader_initial'), 0);
 
     let backendUsed = 'wasm';
     const loadOpts = (provider) => ({
@@ -295,7 +339,7 @@ async function initialiseModels() {
 
     const onProgress = (modelName, current, total) => {
       const pct = Math.round((current / total) * 80);
-      setLoader(`Loading ${modelName.toLowerCase()}`, pct);
+      setLoader(t('loader_model_progress', { model: modelName.toLowerCase() }), pct);
     };
 
     try {
@@ -312,15 +356,15 @@ async function initialiseModels() {
 
     setBackendBadge(backendUsed);
 
-    setLoader('Loading voice', 92);
+    setLoader(t('loader_voice'), 92);
     await ensureStyleLoaded(state.voiceId);
 
-    setLoader('Ready', 100);
+    setLoader(t('loader_ready'), 100);
     setTimeout(() => dom.loader.classList.add('is-done'), 350);
     dom.generateBtn.disabled = false;
   } catch (err) {
     console.error(err);
-    setLoader(`Could not load model: ${err.message}`, 0);
+    setLoader(t('loader_error', { error: err.message }), 0);
     dom.loader.style.color = 'var(--danger)';
   }
 }
@@ -329,13 +373,13 @@ async function ensureStyleLoaded(voiceId) {
   if (state.styleByVoice.has(voiceId)) return state.styleByVoice.get(voiceId);
   if (state.loadingStyleFor === voiceId) {
     return await new Promise((resolve, reject) => {
-      const t = setInterval(() => {
+      const timer = setInterval(() => {
         if (state.styleByVoice.has(voiceId)) {
-          clearInterval(t);
+          clearInterval(timer);
           resolve(state.styleByVoice.get(voiceId));
         }
       }, 50);
-      setTimeout(() => { clearInterval(t); reject(new Error('Voice load timed out.')); }, 30000);
+      setTimeout(() => { clearInterval(timer); reject(new Error('Voice load timed out.')); }, 30000);
     });
   }
   state.loadingStyleFor = voiceId;
@@ -358,7 +402,7 @@ async function playPreview(voiceId) {
     return;
   }
   if (!state.tts) {
-    showError('Model is still loading. Hang on a moment.');
+    showError(t('error_model_loading'));
     return;
   }
   hideError();
@@ -387,7 +431,7 @@ async function playPreview(voiceId) {
     playPreviewUrl(url, voiceId, key);
   } catch (err) {
     console.error(err);
-    showError(`Preview failed. ${err.message}`);
+    showError(t('error_preview', { error: err.message }));
   } finally {
     if (btn) btn.classList.remove('is-loading');
   }
@@ -423,12 +467,12 @@ async function generateSpeech() {
   hideError();
   const text = dom.text.value.trim();
   if (!text) {
-    showError('Add some text first.');
+    showError(t('error_no_text'));
     dom.text.focus();
     return;
   }
   if (!state.tts) {
-    showError('Model is still loading. Hang on a moment.');
+    showError(t('error_model_loading'));
     return;
   }
   if (!state.previewAudio.paused) state.previewAudio.pause();
@@ -438,8 +482,7 @@ async function generateSpeech() {
 
   dom.generateBtn.disabled = true;
   dom.generateBtn.classList.add('is-busy');
-  const originalLabel = dom.generateLabel.textContent;
-  dom.generateLabel.textContent = 'Generating';
+  dom.generateLabel.textContent = t('btn_generating');
 
   const start = performance.now();
   try {
@@ -452,7 +495,7 @@ async function generateSpeech() {
       speed,
       0.3,
       (step, total) => {
-        dom.generateLabel.textContent = `Generating ${step}/${total}`;
+        dom.generateLabel.textContent = t('btn_generating_progress', { step, total });
       }
     );
     const wavLen = Math.floor(state.tts.sampleRate * duration[0]);
@@ -465,18 +508,20 @@ async function generateSpeech() {
 
     dom.audio.src = state.lastOutputUrl;
     dom.transcript.textContent = text;
-    dom.statAudio.textContent = `${duration[0].toFixed(2)}s audio`;
-    dom.statGen.textContent = `${((performance.now() - start) / 1000).toFixed(2)}s gen`;
+    dom.statAudio.textContent = t('output_audio_stat', { seconds: duration[0].toFixed(2) });
+    dom.statGen.textContent = t('output_gen_stat', {
+      seconds: ((performance.now() - start) / 1000).toFixed(2)
+    });
     dom.output.classList.remove('hidden');
     dom.output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     dom.audio.play().catch(() => {/* autoplay blocked is fine */});
   } catch (err) {
     console.error(err);
-    showError(`Generation failed. ${err.message}`);
+    showError(t('error_generation', { error: err.message }));
   } finally {
     dom.generateBtn.disabled = false;
     dom.generateBtn.classList.remove('is-busy');
-    dom.generateLabel.textContent = originalLabel;
+    dom.generateLabel.textContent = t('btn_speak');
   }
 }
 
@@ -491,6 +536,8 @@ function setLoader(text, percent) {
 
 function setBackendBadge(provider) {
   dom.backendBadge.textContent = provider === 'webgpu' ? 'webgpu' : 'wasm';
+  // Stop overriding via i18n once we have a real backend value.
+  delete dom.backendBadge.dataset.i18n;
   dom.backendBadge.classList.add('is-ready');
 }
 
