@@ -1,6 +1,7 @@
 ---
 name: supertts
-description: Use the supertonic-tts CLI to generate WAV files locally from text (EN / KO / JA / 32 lang tags). No API key, runs offline after first asset download. Invoke when the user asks to "speak", "narrate", "say", "make audio from text", "TTS", "음성 생성", "내레이션", "읽어줘".
+description: Local text-to-speech via the supertonic-tts CLI. Use when the user asks to "speak", "narrate", "say", "read aloud", "make audio from text", "TTS", "음성 생성", "내레이션", "읽어줘". Generates 44.1 kHz WAV from EN / KO / JA (and 29 other language tags). No API key, fully offline after the first asset download. Auto-plays by default.
+license: MIT
 ---
 
 # supertts — local TTS CLI
@@ -42,6 +43,7 @@ cache. Subsequent runs reuse the cache and are fast.
 | Slow down speech | `supertts "feliz" --lang es --speed 0.9` |
 | Use specific assets dir | `supertts "hi" --assets /path/to/assets` |
 | Pre-fetch model only | `supertts --download` |
+| Generate without playing | `supertts "headless" --no-play` |
 
 ## Flags (cheat sheet)
 
@@ -65,18 +67,16 @@ cache. Subsequent runs reuse the cache and are fast.
 
 By default the generated WAV plays back immediately using a platform-native
 player (macOS `afplay`, Windows `Media.SoundPlayer`, Linux `paplay` /
-`aplay` / `play` / `ffplay`). Playback is blocking — the command returns
-once audio is done. Pass `--no-play` for batch jobs or any time you don't
-want the audio to play (capturing the path in a script, automated tests,
-log-only runs).
+`aplay` / `play` / `ffplay`). Playback is blocking — the command returns once
+audio is done. Pass `--no-play` for batch jobs or any time the audio
+shouldn't play (capturing path in a script, automated tests, log-only runs).
 
-The CLI prints the final output path on **stdout** (one line). All progress /
-status messages go to **stderr**, so this pattern is safe in scripts:
+The CLI prints the final output path on **stdout** (one line). All progress
+and status messages go to **stderr**.
 
 ```bash
-OUT=$(supertts "audio test" --quiet)
-# $OUT now holds the absolute path; auto-play was skipped because stdout
-# was being captured.
+OUT=$(supertts "audio test" --quiet --no-play)
+# $OUT now holds the absolute path to the generated WAV
 ```
 
 ## Voice catalog
@@ -91,7 +91,7 @@ OUT=$(supertts "audio test" --quiet)
 | M3 | Leo   | male   |
 
 Every voice works with every supported language. There is no per-voice
-language. The voice provides timbre; `--lang` controls pronunciation.
+language — the voice provides timbre; `--lang` controls pronunciation.
 
 ## Supported language tags
 
@@ -105,22 +105,25 @@ Chinese (`zh`) is **not** supported by the underlying Supertonic 3 model.
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `error: no input text` | nothing piped, no `-t`, no positional | pass text |
-| Hangs on first run | downloading 380 MB of weights | wait or run `supertts --download` first |
+| Hangs on first run | downloading 380 MB of weights | wait, or run `supertts --download` first |
 | `unsupported language` | typo in `--lang` | run `supertts --list-langs` |
 | `unknown voice` | bad `--voice` value | use `F1-F3`, `M1-M3` |
-| Garbled pronunciation for Korean | running without `--lang` and text is only ASCII | omit ASCII transliteration; pass actual Hangul, or use `--lang ko` explicitly |
-| File-not-found | `-f path` wrong | use absolute path or check cwd |
+| Garbled pronunciation for Korean | text was only ASCII transliteration | pass actual Hangul, or use `--lang ko` explicitly |
+| File-not-found on `-f` | wrong path | use absolute path or check cwd |
+| No audio plays | unsupported player on Linux | install `pulseaudio-utils` (`paplay`) or `alsa-utils` (`aplay`); the WAV is still written successfully |
 
 ## Best practices for agents
 
 - Default to `--steps 8`. Only raise to 12–16 for production narration; only
   drop to 4 for fast iteration / preview.
 - Korean / Japanese sound clearer at `--speed 0.95`–`1.0`.
-- Auto language detection covers Hangul (`ko`) and Hiragana/Katakana (`ja`);
+- Auto language detection covers Hangul (`ko`) and Hiragana / Katakana (`ja`);
   for any other language always pass `--lang` explicitly.
 - For long content, chunk by paragraph and concatenate WAVs externally rather
   than feeding 10 000 chars at once. The model handles long input but a single
   process holds the entire WAV in RAM.
-- Capture output path from stdout, never parse stderr.
+- Capture the output path from **stdout**, never parse stderr.
 - If the user wants a specific filename, always pass `-o <path>`; otherwise
   they get a timestamped file in cwd which is often not what they expect.
+- For non-interactive workflows (CI, agents, batch), always pass `--no-play`
+  to avoid blocking on audio playback.
