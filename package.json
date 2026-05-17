@@ -1,6 +1,6 @@
 {
   "name": "supertonic-tts",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Local Supertonic 3 text-to-speech: web app (WebGPU/WASM) + cross-platform CLI",
   "type": "module",
   "bin": {
