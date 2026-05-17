@@ -4,3 +4,10 @@ assets/
 _ref/
 .DS_Store
 *.log
+
+# CLI / TTS generated output
+*.wav
+out-*.wav
+
+# Editor / agent local config
+.claude/

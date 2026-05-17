@@ -1,18 +1,33 @@
 {
-  "name": "supertonic-tts-app",
+  "name": "supertonic-tts",
   "version": "1.0.0",
-  "private": true,
-  "description": "Minimal, beginner-friendly Supertonic TTS web app (EN / KO / JA)",
+  "description": "Local Supertonic 3 text-to-speech: web app (WebGPU/WASM) + cross-platform CLI",
   "type": "module",
+  "bin": {
+    "supertts": "./bin/supertonic.mjs",
+    "supertonic-tts": "./bin/supertonic.mjs"
+  },
+  "files": [
+    "bin/",
+    "cli/",
+    "app/helper.js",
+    "scripts/download-assets.mjs",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.3.0"
+  },
   "scripts": {
     "postinstall": "node scripts/download-assets.mjs",
     "assets": "node scripts/download-assets.mjs",
     "dev": "vite",
     "build": "vite build",
-    "start": "vite preview --port 3000 --host"
+    "start": "vite preview --port 3000 --host",
+    "tts": "node bin/supertonic.mjs"
   },
   "dependencies": {
     "mammoth": "^1.8.0",
+    "onnxruntime-node": "^1.17.0",
     "onnxruntime-web": "^1.17.0"
   },
   "devDependencies": {

@@ -1,6 +1,9 @@
-import { loadTextToSpeech, loadVoiceStyle, writeWavFile } from './helper.js';
+import * as ort from 'onnxruntime-web';
+import { configureOrt, loadTextToSpeech, loadVoiceStyle, writeWavFile } from './helper.js';
 import mammoth from 'mammoth/mammoth.browser.js';
 import { t, applyDom, setLocale, getLocale } from './i18n.js';
+
+configureOrt(ort);
 
 /* ================== Config ================== */
 

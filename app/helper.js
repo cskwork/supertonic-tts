@@ -1,4 +1,9 @@
-import * as ort from 'onnxruntime-web';
+// ORT runtime is injected by the caller (web app passes onnxruntime-web,
+// CLI passes onnxruntime-node). Both runtimes share the Tensor / InferenceSession API.
+let ort;
+export function configureOrt(ortModule) {
+    ort = ortModule;
+}
 
 // Available languages for multilingual TTS
 export const AVAILABLE_LANGS = ['en', 'ko', 'ja', 'ar', 'bg', 'cs', 'da', 'de', 'el', 'es', 'et', 'fi', 'fr', 'hi', 'hr', 'hu', 'id', 'it', 'lt', 'lv', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'vi', 'na'];

@@ -128,6 +128,15 @@ async function main() {
     return;
   }
 
+  // Skip on `npm install -g supertonic-tts` — system install dirs are usually
+  // not user-writable, and the CLI downloads assets on-demand to the platform
+  // user cache instead.
+  if (process.env.npm_config_global === 'true') {
+    log('Global install detected — skipping bundled asset download.');
+    log('(CLI will fetch assets to your user cache on first run.)');
+    return;
+  }
+
   ensureDir(assetsDir);
   log(`Assets directory: ${assetsDir}`);
   log(`Source: https://huggingface.co/${HF_REPO}`);

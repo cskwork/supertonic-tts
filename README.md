@@ -1,12 +1,15 @@
-# Supertonic TTS — Minimal Web App
+# Supertonic TTS — Web App + CLI
 
-A clean, beginner-friendly text-to-speech web app built on
-[Supertonic 3](https://github.com/supertone-inc/supertonic). Three ready-made
-UI languages (English, Korean, Japanese), additional Supertonic language tags
-available in the text processor, six preset voices with one-tap preview,
-paste-or-upload input (`.txt` / `.docx`), and instant download — all running
-entirely in your browser via WebGPU/WebAssembly. No accounts, no API keys, no
-cloud round-trips.
+A clean, beginner-friendly text-to-speech project built on
+[Supertonic 3](https://github.com/supertone-inc/supertonic). Two ways to use it:
+
+- **Web app** — Three ready-made UI languages (English, Korean, Japanese), six
+  preset voices with one-tap preview, paste-or-upload input (`.txt` / `.docx`),
+  instant WAV download. Runs entirely in your browser via WebGPU/WebAssembly.
+- **CLI** — `supertonic-tts "hello"` from any terminal on macOS, Windows, or
+  Linux. Installed globally with `npm`, native ONNX runtime, no GPU required.
+
+No accounts, no API keys, no cloud round-trips.
 
 ## Features
 
@@ -62,7 +65,74 @@ development, or from the Hugging Face CDN in production.
   1.8.
 - **Output**: mono 44.1 kHz, 16-bit PCM WAV generated locally in the browser.
 
-## Quick start
+## CLI
+
+A standalone Node CLI ships in this package. Install once and run from any
+directory. Two equivalent commands are exposed: short (`supertts`) and full
+(`supertonic-tts`).
+
+```bash
+# global install — Windows, macOS, Linux
+npm install -g supertonic-tts
+
+# simplest form — positional text, auto-detects KO/JA/EN
+supertts "Hello from Supertonic!"
+supertts "안녕하세요"
+supertts "こんにちは" --voice M1
+
+# explicit flags
+supertts -t "Hi there" -o hi.wav --voice F2
+supertts -f input.txt --lang ko -o out.wav
+echo "piped text" | supertts -o piped.wav
+```
+
+On the first synth, model assets (~380 MB) are auto-downloaded from Hugging
+Face into a platform-appropriate user cache:
+
+| Platform | Default assets directory |
+| --- | --- |
+| Windows | `%LOCALAPPDATA%\supertonic-tts\assets` |
+| macOS   | `~/Library/Caches/supertonic-tts/assets` |
+| Linux   | `$XDG_CACHE_HOME/supertonic-tts/assets` (or `~/.cache/...`) |
+
+Override with `--assets <dir>` or the `SUPERTONIC_ASSETS` env var. Pre-fetch
+without synthesizing via `supertonic-tts --download`.
+
+### CLI flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `-t, --text <s>` | — | inline text |
+| `-f, --file <p>` | — | read text from a `.txt` file |
+| `-o, --out <p>`  | `./out-<timestamp>.wav` | output WAV path |
+| `-l, --lang <c>` | auto | language tag (auto-detects ko/ja/en; see `--list-langs`) |
+| `-v, --voice <id>` | `F1` | voice id: `F1`–`F3`, `M1`–`M3` |
+| `-s, --speed <n>` | `1.05` | 0.7 – 1.8 |
+| `--steps <n>` | `8` | quality steps 4 – 16 |
+| `--silence <s>` | `0.3` | inter-chunk pause (sec) |
+| `--assets <dir>` | auto | override assets directory |
+| `--download` | — | only fetch / verify assets |
+| `--no-play` | — | don't auto-play the generated WAV |
+| `--list-voices` | — | print voice catalog |
+| `--list-langs` | — | print supported language tags |
+| `-q, --quiet` | — | suppress progress logs |
+| `-h, --help` | — | show help |
+
+By default the generated WAV plays back immediately
+(macOS `afplay`, Windows `Media.SoundPlayer`, Linux `paplay`/`aplay`/`play`/
+`ffplay`). Playback is blocking — the command returns once the audio has
+finished. Pass `--no-play` for batch / scripted usage.
+
+The CLI prints the output path on `stdout` (one line, easy to pipe). All
+progress / status messages go to `stderr`.
+
+```bash
+# capture the output path without playback
+OUT=$(supertts "audio test" --quiet --no-play)
+echo "wrote $OUT"
+```
+
+## Web app quick start
 
 Requires Node.js 18+ only. Model assets (~380 MB) are streamed directly from
 Hugging Face — no `git-lfs` needed.
