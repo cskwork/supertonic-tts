@@ -34,7 +34,10 @@
           <button class="locale-opt is-active" type="button" data-locale="ko" aria-pressed="true">한</button>
           <button class="locale-opt" type="button" data-locale="en" aria-pressed="false">EN</button>
         </div>
-        <a class="link" href="https://github.com/cskwork/supertonic-tts" target="_blank" rel="noreferrer noopener" data-i18n="topbar_source">소스 보기</a>
+        <a class="link link-git" href="https://github.com/cskwork/supertonic-tts" target="_blank" rel="noreferrer noopener" data-i18n="topbar_source">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          소스 보기
+        </a>
       </div>
     </header>
 
@@ -54,103 +57,135 @@
         <div class="loader-bar"><div id="loaderFill" class="loader-fill"></div></div>
       </div>
 
-      <section class="section">
-        <div class="section-label">
-          <span data-i18n="section_language">언어</span>
-        </div>
-        <div class="lang-row" id="langTabs" role="tablist">
-          <button class="lang-pill is-active" role="tab" data-lang="ko" aria-selected="true">
-            <span>한국어</span>
-            <span class="lang-code">ko</span>
-          </button>
-          <button class="lang-pill" role="tab" data-lang="en" aria-selected="false">
-            <span>English</span>
-            <span class="lang-code">en</span>
-          </button>
-          <button class="lang-pill" role="tab" data-lang="ja" aria-selected="false">
-            <span>日本語</span>
-            <span class="lang-code">ja</span>
-          </button>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-label">
-          <span data-i18n="section_voice">목소리</span>
-          <span class="label-hint" data-i18n="section_voice_hint">동그라미를 눌러 미리 들어보세요.</span>
-        </div>
-        <div id="voiceGrid" class="voice-row"></div>
-      </section>
-
-      <section class="section">
-        <div class="section-label">
-          <span data-i18n="section_text">본문</span>
-          <span class="label-hint" data-i18n="section_text_hint">직접 쓰거나 붙여넣거나, 파일을 끌어다 놓아 보세요.</span>
-        </div>
-
-        <div class="presets" id="presets" data-i18n-aria-label="presets_aria" aria-label="예시 문장"></div>
-
-        <div class="text-wrap" id="textWrap">
-          <textarea
-            id="text"
-            class="text-input"
-            spellcheck="false"
-            data-i18n-placeholder="text_placeholder"
-            placeholder="여기에 변환할 문장을 입력하거나 붙여넣으세요. .txt 또는 .docx 파일을 끌어다 놓아도 됩니다."
-          ></textarea>
-          <div class="dragover-hint" data-i18n="text_dragover">놓으면 본문에 불러옵니다</div>
-        </div>
-
-        <div class="text-tools">
-          <label class="file-pick">
-            <input
-              id="fileInput"
-              type="file"
-              accept=".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              hidden
-            />
-            <span class="file-pick-link" data-i18n="file_pick_link">.txt / .docx 파일 올리기</span>
-            <span id="fileName" class="file-name"></span>
-          </label>
-          <span id="charCount" class="text-meta">0 글자</span>
-        </div>
-
-        <details class="advanced">
-          <summary data-i18n="advanced_toggle">고급 설정</summary>
-          <div class="advanced-grid">
-            <label>
-              <span data-i18n="advanced_quality">품질 (단계 수)</span>
-              <input id="totalStep" type="number" value="8" min="4" max="16" step="1" />
-            </label>
-            <label>
-              <span data-i18n="advanced_speed">속도</span>
-              <input id="speed" type="number" value="1.05" min="0.7" max="1.8" step="0.05" />
-            </label>
+      <!-- Controls Panel Card -->
+      <div class="glass-card section">
+        <section class="section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span data-i18n="section_language">언어</span>
           </div>
-        </details>
-      </section>
+          <div class="lang-row" id="langTabs" role="tablist">
+            <button class="lang-pill is-active" role="tab" data-lang="ko" aria-selected="true">
+              <span>한국어</span>
+              <span class="lang-code">ko</span>
+            </button>
+            <button class="lang-pill" role="tab" data-lang="en" aria-selected="false">
+              <span>English</span>
+              <span class="lang-code">en</span>
+            </button>
+            <button class="lang-pill" role="tab" data-lang="ja" aria-selected="false">
+              <span>日本語</span>
+              <span class="lang-code">ja</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="section" style="margin-top: 8px;">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+            <span data-i18n="section_voice">목소리</span>
+            <span class="label-hint" data-i18n="section_voice_hint">동그라미를 눌러 미리 들어보세요.</span>
+          </div>
+          <div id="voiceGrid" class="voice-row"></div>
+        </section>
+      </div>
+
+      <!-- Main Input Panel Card -->
+      <div class="glass-card section">
+        <section class="section">
+          <div class="section-label">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span data-i18n="section_text">본문</span>
+            <span class="label-hint" data-i18n="section_text_hint">직접 쓰거나 붙여넣거나, 파일을 끌어다 놓아 보세요.</span>
+          </div>
+
+          <div class="presets" id="presets" data-i18n-aria-label="presets_aria" aria-label="예시 문장"></div>
+
+          <div class="text-wrap" id="textWrap">
+            <textarea
+              id="text"
+              class="text-input"
+              spellcheck="false"
+              data-i18n-placeholder="text_placeholder"
+              placeholder="여기에 변환할 문장을 입력하거나 붙여넣으세요. .txt 또는 .docx 파일을 끌어다 놓아도 됩니다."
+            ></textarea>
+            <div class="dragover-hint" data-i18n="text_dragover">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              놓으면 본문에 불러옵니다
+            </div>
+          </div>
+
+          <div class="text-tools">
+            <label class="file-pick">
+              <input
+                id="fileInput"
+                type="file"
+                accept=".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                hidden
+              />
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 16 4-4 4 4"/></svg>
+              <span class="file-pick-link" data-i18n="file_pick_link">.txt / .docx 파일 올리기</span>
+              <span id="fileName" class="file-name hidden"></span>
+            </label>
+            <span id="charCount" class="text-meta">0 글자</span>
+          </div>
+
+          <details class="advanced">
+            <summary data-i18n="advanced_toggle">고급 설정</summary>
+            <div class="advanced-grid">
+              <label>
+                <div class="slider-label-row">
+                  <span data-i18n="advanced_quality">품질 (단계 수)</span>
+                  <span id="qualityVal" class="slider-value-display">8</span>
+                </div>
+                <input id="totalStep" type="range" value="8" min="4" max="16" step="1" />
+              </label>
+              <label>
+                <div class="slider-label-row">
+                  <span data-i18n="advanced_speed">속도</span>
+                  <span id="speedVal" class="slider-value-display">1.05x</span>
+                </div>
+                <input id="speed" type="range" value="1.05" min="0.7" max="1.8" step="0.05" />
+              </label>
+            </div>
+          </details>
+        </section>
+      </div>
 
       <div class="action-row">
         <button id="generateBtn" class="primary-btn" disabled>
+          <span class="btn-spinner"></span>
           <span id="generateLabel" data-i18n="btn_speak">음성으로 변환</span>
           <kbd data-i18n-aria-label="btn_shortcut_aria" aria-label="단축키 Cmd 또는 Ctrl 엔터">⌘ ↵</kbd>
         </button>
         <p id="errorMsg" class="error-msg" role="alert"></p>
       </div>
 
-      <section id="output" class="output hidden">
+      <!-- Gorgeous Custom Output Card -->
+      <section id="output" class="output hidden glass-card">
         <div class="output-head">
-          <h2 class="output-title" data-i18n="output_title">결과</h2>
+          <div class="output-title-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <h2 class="output-title" data-i18n="output_title">결과</h2>
+          </div>
           <div class="output-stats">
             <span id="statAudio">···</span>
             <span class="sep">/</span>
             <span id="statGen">···</span>
           </div>
         </div>
-        <audio id="audio" controls></audio>
+        <div class="audio-player-container">
+          <audio id="audio" controls></audio>
+        </div>
         <div class="output-actions">
-          <button id="downloadBtn" class="ghost-btn" data-i18n="btn_download">WAV 파일로 저장</button>
-          <button id="copyLinkBtn" class="ghost-btn" data-i18n="btn_open_tab">새 탭에서 열기</button>
+          <button id="downloadBtn" class="ghost-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span data-i18n="btn_download">WAV 파일로 저장</span>
+          </button>
+          <button id="copyLinkBtn" class="ghost-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <span data-i18n="btn_open_tab">새 탭에서 열기</span>
+          </button>
         </div>
         <details class="transcript">
           <summary data-i18n="transcript_toggle">원문 보기</summary>

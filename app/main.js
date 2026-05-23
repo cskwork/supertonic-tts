@@ -58,6 +58,15 @@ const LANGS = {
 const DEFAULT_VOICE_ID = 'F1';
 const DEFAULT_LANG = 'ko';
 
+const VOICE_DESC = {
+  F1: { ko: '맑고 깨끗한 여성 톤', en: 'Bright & clear female tone', ja: '明るく澄んだ女性の声' },
+  F2: { ko: '차분하고 따뜻한 여성 톤', en: 'Warm & gentle female tone', ja: '落ち着いて温かい女性の声' },
+  F3: { ko: '자연스럽고 친근한 여성 톤', en: 'Natural & friendly female tone', ja: '自然で親しみやすい女性の声' },
+  M1: { ko: '신뢰감 있고 부드러운 남성 톤', en: 'Soft & trustworthy male tone', ja: '優しく信頼感のある男性の声' },
+  M2: { ko: '지적이고 차분한 남성 톤', en: 'Calm & intellectual male tone', ja: '知的で落ち着いた男性の声' },
+  M3: { ko: '에너지 넘치는 남성 톤', en: 'Energetic & bold male tone', ja: 'エネルギッシュな男性の声' }
+};
+
 /* ================== State ================== */
 
 const state = {
@@ -120,6 +129,12 @@ window.addEventListener('DOMContentLoaded', () => {
   updateCharCount();
   initialiseModels();
 
+  // Set initial slider label values
+  const qVal = $('#qualityVal');
+  const sVal = $('#speedVal');
+  if (qVal && dom.totalStep) qVal.textContent = dom.totalStep.value;
+  if (sVal && dom.speed) sVal.textContent = parseFloat(dom.speed.value).toFixed(2) + 'x';
+
   // Re-run dynamic renders when UI locale changes.
   window.addEventListener('locale-changed', (e) => {
     syncLocaleToggle(e.detail);
@@ -134,22 +149,41 @@ window.addEventListener('DOMContentLoaded', () => {
 function renderVoices() {
   dom.voiceGrid.innerHTML = '';
   for (const v of VOICES) {
-    const chip = document.createElement('button');
-    chip.type = 'button';
+    const chip = document.createElement('div');
     chip.className = 'voice-chip' + (v.id === state.voiceId ? ' is-active' : '');
     chip.dataset.voiceId = v.id;
+    chip.setAttribute('tabindex', '0');
+    chip.setAttribute('role', 'radio');
+    chip.setAttribute('aria-checked', String(v.id === state.voiceId));
+
     const genderLabel = t(v.gender === 'male' ? 'gender_male' : 'gender_female');
     const previewTitle = t('voice_preview_title', { name: v.label });
     const previewAria = t('voice_preview_aria', { name: v.label });
+    const desc = VOICE_DESC[v.id][getLocale()] || VOICE_DESC[v.id]['en'];
+
     chip.innerHTML = `
-      <span class="voice-name">${v.label}</span>
-      <span class="voice-meta">${genderLabel}</span>
-      <span class="voice-preview" data-action="preview" title="${previewTitle}" aria-label="${previewAria}">
-        <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
-          <circle cx="5" cy="5" r="3"/>
+      <div class="voice-info">
+        <div class="voice-name-row">
+          <span class="voice-name">${v.label}</span>
+          <span class="voice-meta">${genderLabel}</span>
+        </div>
+        <span class="voice-subtext">${desc}</span>
+      </div>
+      <span class="voice-preview" data-action="preview" title="${previewTitle}" aria-label="${previewAria}" role="button" tabindex="0">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <polygon points="6 3 20 12 6 21 6 3"></polygon>
         </svg>
       </span>
     `;
+
+    // Handle space/enter key selection for a11y
+    chip.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        setActiveVoice(v.id);
+      }
+    });
+
     dom.voiceGrid.appendChild(chip);
   }
 }
@@ -204,7 +238,9 @@ function setActiveVoice(voiceId) {
   if (!VOICES.find((v) => v.id === voiceId)) return;
   state.voiceId = voiceId;
   document.querySelectorAll('.voice-chip').forEach((card) => {
-    card.classList.toggle('is-active', card.dataset.voiceId === voiceId);
+    const isActive = card.dataset.voiceId === voiceId;
+    card.classList.toggle('is-active', isActive);
+    card.setAttribute('aria-checked', String(isActive));
   });
   ensureStyleLoaded(voiceId).catch((err) => {
     console.error(err);
@@ -249,6 +285,20 @@ function wireEvents() {
       if (!dom.generateBtn.disabled) generateSpeech();
     }
   });
+
+  // Range Sliders Event Listeners
+  const qualityVal = $('#qualityVal');
+  const speedVal = $('#speedVal');
+  if (qualityVal && dom.totalStep) {
+    dom.totalStep.addEventListener('input', (e) => {
+      qualityVal.textContent = e.target.value;
+    });
+  }
+  if (speedVal && dom.speed) {
+    dom.speed.addEventListener('input', (e) => {
+      speedVal.textContent = parseFloat(e.target.value).toFixed(2) + 'x';
+    });
+  }
 
   // Drag-drop file
   ['dragenter', 'dragover'].forEach((evt) =>
@@ -304,6 +354,7 @@ function wireEvents() {
 async function ingestFile(file) {
   hideError();
   dom.fileName.textContent = file.name;
+  dom.fileName.classList.remove('hidden');
   try {
     const text = await extractTextFromFile(file);
     if (!text.trim()) throw new Error(t('error_file_empty'));
@@ -312,8 +363,10 @@ async function ingestFile(file) {
   } catch (err) {
     showError(err.message);
     dom.fileName.textContent = '';
+    dom.fileName.classList.add('hidden');
   }
 }
+
 
 async function extractTextFromFile(file) {
   const lower = file.name.toLowerCase();
@@ -545,10 +598,13 @@ function setBackendBadge(provider) {
 }
 
 function showError(msg) {
-  dom.errorMsg.textContent = msg;
+  dom.errorMsg.innerHTML = msg ? `
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>${msg}</span>
+  ` : '';
 }
 function hideError() {
-  dom.errorMsg.textContent = '';
+  dom.errorMsg.innerHTML = '';
 }
 
 function clampInt(raw, min, max, fallback) {
