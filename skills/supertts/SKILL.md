@@ -1,6 +1,6 @@
 ---
 name: supertts
-description: Local text-to-speech via the supertonic-tts CLI. Use when the user asks to "speak", "narrate", "say", "read aloud", "make audio from text", "TTS", "음성 생성", "내레이션", "읽어줘". Generates 44.1 kHz WAV from EN / KO / JA (and 29 other language tags). No API key, fully offline after the first asset download. Auto-plays by default.
+description: Local, offline text-to-speech via the supertonic-tts CLI. Use when the user wants text spoken or read aloud (narration, TTS, 읽어줘, 음성 생성), or wants a WAV audio file generated from text or a .txt file. Covers 32 language tags including EN / KO / JA.
 license: MIT
 ---
 
@@ -13,22 +13,21 @@ weights are cached.
 
 ## Quick check: is it available?
 
-Run one of these. If both fail, ask the user to install:
-
 ```bash
 supertts --list-voices
-# or
-npx supertonic-tts --list-voices
 ```
 
-Install command (Windows / macOS / Linux, requires Node >= 18.3):
+If that command is missing, ask the user to install (Windows / macOS / Linux,
+requires Node >= 18.3):
 
 ```bash
 npm install -g supertonic-tts
 ```
 
-First synthesis auto-downloads ~380 MB of model weights to a platform-specific
-cache. Subsequent runs reuse the cache and are fast.
+The first synthesis downloads ~380 MB of model weights to a platform-specific
+cache; subsequent runs reuse it and are fast. `npx supertonic-tts ...` also
+works without a global install — reserve it for that case, since npx runs the
+package's `postinstall`, which pulls those weights up front.
 
 ## Common invocations
 
@@ -43,7 +42,6 @@ cache. Subsequent runs reuse the cache and are fast.
 | Slow down speech | `supertts "feliz" --lang es --speed 0.9` |
 | Use specific assets dir | `supertts "hi" --assets /path/to/assets` |
 | Pre-fetch model only | `supertts --download` |
-| Generate without playing | `supertts "headless" --no-play` |
 
 ## Flags (cheat sheet)
 
@@ -56,7 +54,7 @@ cache. Subsequent runs reuse the cache and are fast.
 -s, --speed <n>      0.7 – 1.8 (default: 1.05)
     --steps <n>      4 – 16 quality steps (default: 8)
     --silence <s>    pause between chunks in seconds (default: 0.3)
-    --assets <dir>   override assets directory
+    --assets <dir>   override assets directory (env: SUPERTONIC_ASSETS)
     --download       fetch / verify assets only
     --no-play        skip auto-playback (default plays after synth)
     --list-voices    print voice catalog
@@ -68,8 +66,7 @@ cache. Subsequent runs reuse the cache and are fast.
 By default the generated WAV plays back immediately using a platform-native
 player (macOS `afplay`, Windows `Media.SoundPlayer`, Linux `paplay` /
 `aplay` / `play` / `ffplay`). Playback is blocking — the command returns once
-audio is done. Pass `--no-play` for batch jobs or any time the audio
-shouldn't play (capturing path in a script, automated tests, log-only runs).
+audio is done.
 
 The CLI prints the final output path on **stdout** (one line). All progress
 and status messages go to **stderr**.
@@ -122,8 +119,7 @@ Chinese (`zh`) is **not** supported by the underlying Supertonic 3 model.
 - For long content, chunk by paragraph and concatenate WAVs externally rather
   than feeding 10 000 chars at once. The model handles long input but a single
   process holds the entire WAV in RAM.
-- Capture the output path from **stdout**, never parse stderr.
-- If the user wants a specific filename, always pass `-o <path>`; otherwise
-  they get a timestamped file in cwd which is often not what they expect.
+- Pass `-o <path>` whenever the destination matters; without it the WAV lands
+  in cwd as `out-<timestamp>.wav`.
 - For non-interactive workflows (CI, agents, batch), always pass `--no-play`
   to avoid blocking on audio playback.
