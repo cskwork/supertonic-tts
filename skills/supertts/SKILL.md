@@ -4,7 +4,7 @@ description: Local, offline text-to-speech via the supertonic-tts CLI. Use when 
 license: MIT
 ---
 
-# supertts — local TTS CLI
+# supertts: local TTS CLI
 
 `supertts` (alias: `supertonic-tts`) is a globally installable Node CLI that
 turns text into a 44.1 kHz mono WAV file using the on-device Supertonic 3 ONNX
@@ -26,7 +26,7 @@ npm install -g supertonic-tts
 
 The first synthesis downloads ~380 MB of model weights to a platform-specific
 cache; subsequent runs reuse it and are fast. `npx supertonic-tts ...` also
-works without a global install — reserve it for that case, since npx runs the
+works without a global install. Reserve it for that case, since npx runs the
 package's `postinstall`, which pulls those weights up front.
 
 ## Common invocations
@@ -65,7 +65,7 @@ package's `postinstall`, which pulls those weights up front.
 
 By default the generated WAV plays back immediately using a platform-native
 player (macOS `afplay`, Windows `Media.SoundPlayer`, Linux `paplay` /
-`aplay` / `play` / `ffplay`). Playback is blocking — the command returns once
+`aplay` / `play` / `ffplay`). Playback blocks, so the command returns only once
 audio is done.
 
 The CLI prints the final output path on **stdout** (one line). All progress
@@ -88,7 +88,7 @@ OUT=$(supertts "audio test" --quiet --no-play)
 | M3 | Leo   | male   |
 
 Every voice works with every supported language. There is no per-voice
-language — the voice provides timbre; `--lang` controls pronunciation.
+language. The voice provides the timbre, and `--lang` controls pronunciation.
 
 ## Supported language tags
 
