@@ -1,13 +1,13 @@
-# Supertonic TTS — Web App + CLI
+# Supertonic TTS: web app and CLI
 
-A clean, beginner-friendly text-to-speech project built on
+A text-to-speech project built on
 [Supertonic 3](https://github.com/supertone-inc/supertonic). Two ways to use it:
 
-- **Web app** — Three ready-made UI languages (English, Korean, Japanese), six
+- **Web app.** Three ready-made UI languages (English, Korean, Japanese), six
   preset voices with one-tap preview, paste-or-upload input (`.txt` / `.docx`),
-  instant WAV download. Runs entirely in your browser via WebGPU/WebAssembly.
-- **CLI** — `supertonic-tts "hello"` from any terminal on macOS, Windows, or
-  Linux. Installed globally with `npm`, native ONNX runtime, no GPU required.
+  instant WAV download. Runs in your browser on WebGPU or WebAssembly.
+- **CLI.** `supertonic-tts "hello"` from any terminal on macOS, Windows, or
+  Linux. Install globally with `npm`. Native ONNX runtime, no GPU required.
 
 No accounts, no API keys, no cloud round-trips.
 
@@ -40,7 +40,7 @@ with preview and preset text, then add or render the matching language tab.
 
 ### Voice styles
 
-Every voice style can be used with every supported TTS language tag:
+You can pair any voice style with any supported TTS language tag.
 
 | ID | Display name | Type | Style file |
 | --- | --- | --- | --- |
@@ -51,9 +51,9 @@ Every voice style can be used with every supported TTS language tag:
 | `M2` | Hiro | Male | `voice_styles/M2.json` |
 | `M3` | Leo | Male | `voice_styles/M3.json` |
 
-`F1` / Mina is the default voice. Voice styles are downloaded from
-`Supertone/supertonic-3` and loaded on demand from `assets/voice_styles/` in
-development, or from the Hugging Face CDN in production.
+`F1` / Mina is the default voice. The app pulls voice styles from
+`Supertone/supertonic-3` and loads them on demand, from `assets/voice_styles/`
+in development or from the Hugging Face CDN in production.
 
 ### Model/runtime options
 
@@ -120,8 +120,8 @@ without synthesizing via `supertonic-tts --download`.
 
 By default the generated WAV plays back immediately
 (macOS `afplay`, Windows `Media.SoundPlayer`, Linux `paplay`/`aplay`/`play`/
-`ffplay`). Playback is blocking — the command returns once the audio has
-finished. Pass `--no-play` for batch / scripted usage.
+`ffplay`). Playback blocks, so the command returns only once the audio has
+finished. Pass `--no-play` for batch or scripted usage.
 
 The CLI prints the output path on `stdout` (one line, easy to pipe). All
 progress / status messages go to `stderr`.
@@ -134,8 +134,8 @@ echo "wrote $OUT"
 
 ## Web app quick start
 
-Requires Node.js 18+ only. Model assets (~380 MB) are streamed directly from
-Hugging Face — no `git-lfs` needed.
+Requires Node.js 18+ only. Model assets (~380 MB) stream directly from
+Hugging Face, so you do not need `git-lfs`.
 
 ```bash
 # Install + auto-download the model assets
@@ -159,10 +159,10 @@ npm run build     # outputs to ./dist
 npm start         # serves ./dist on http://localhost:3000
 ```
 
-In production builds, the app **fetches model weights directly from the
-Hugging Face CDN at runtime** (`huggingface.co/Supertone/supertonic-3`),
-so deployments don't have to ship the 380 MB of `.onnx` files. The CDN sets
-proper CORS headers and long cache lifetimes.
+In production builds, the app fetches model weights from the Hugging Face CDN at
+runtime (`huggingface.co/Supertone/supertonic-3`), so a deployment does not have
+to ship the 380 MB of `.onnx` files. The CDN sets the CORS headers and long
+cache lifetimes this needs.
 
 ## Deploying
 
@@ -195,9 +195,9 @@ vercel --prod
 
 ### Self-hosting
 
-`npm run build` emits a fully static `./dist` directory — serve it with any
-static host (nginx, Caddy, Cloudflare Pages, S3 + CloudFront, etc.). If you
-also want multi-threaded WASM acceleration, send these response headers:
+`npm run build` emits a fully static `./dist` directory. Serve it with any
+static host: nginx, Caddy, Cloudflare Pages, S3 + CloudFront. If you also want
+multi-threaded WASM acceleration, send these response headers:
 
 ```
 Cross-Origin-Opener-Policy: same-origin
@@ -234,16 +234,16 @@ Cross-Origin-Embedder-Policy: credentialless
 4. The vocoder synthesises 44.1 kHz, 16-bit PCM. The WAV file is built
    client-side and offered for playback / download.
 
-Every step runs locally — your text and the generated audio never leave
+Every step runs locally. Your text and the generated audio never leave
 the device.
 
 ## Troubleshooting
 
 - **"Loading model" stays forever**: open DevTools → Network. If the model
   files (`.onnx`) 404, run `npm run assets` again.
-- **WebGPU disabled**: only modern Chrome / Edge / Safari Tech Preview
-  support WebGPU. The app silently falls back to WebAssembly — slower but
-  works everywhere.
+- **WebGPU disabled**: only recent Chrome, Edge, and Safari Tech Preview
+  support WebGPU. The app falls back to WebAssembly without saying so. That is
+  slower, but it works everywhere.
 - **DOCX upload fails**: complex DOCX files with embedded objects may not
   parse cleanly. Save as plain `.txt` as a fallback.
 - **Korean / Japanese sound rushed**: drop "Speed" in Advanced options
